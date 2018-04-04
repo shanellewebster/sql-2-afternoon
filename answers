@@ -1,0 +1,237 @@
+JOINS
+
+SYNTAX HINT -
+SELECT [Column names] 
+FROM [Table] [abbv]
+JOIN [Table2] [abbv2] ON abbv.prop = abbv2.prop WHERE [Conditions];
+
+SELECT a.Name, b.Name FROM SomeTable a JOIN AnotherTable b ON a.someid = b.someid;
+SELECT a.Name, b.Name FROM SomeTable a JOIN AnotherTable b ON a.someid = b.someid WHERE b.email = 'e@mail.com';
+
+Get all invoices where the UnitPrice on the InvoiceLine is greater than $0.99.
+/* select * from Invoice i Join InvoiceLine il on il.invoiceId = i.invoiceId where il.UnitPrice >0.99; */
+
+Get the InvoiceDate, customer FirstName and LastName, and Total from all invoices.
+select i.InvoiceDate, c.FirstName, c.LastName, i.Total from Invoice i join Customer c on i.CustomerId = c.CustomerId;
+
+Get the customer FirstName and LastName and the support rep's FirstName and LastName from all customers.
+select c.FirstName, c.LastName, e.FirstName, e.LastName
+from Customer c
+Join Employee e on c.SupportRepId = e.EmployeeId;
+
+Get the album Title and the artist Name from all albums.
+select al.Title, ar.Name
+from Album al
+join Artist ar on al.ArtistId = ar.ArtistId;
+
+Get all PlaylistTrack TrackIds where the playlist Name is Music.
+select pt.TrackId
+from PlaylistTrack pt
+join Playlist p on p.PlaylistId = pt.PlaylistId
+where p.Name = 'Music';
+
+Get all Track Names for PlaylistId 5.
+select t.Name
+from Track t
+join PlaylistTrack pt on pt.TrackId = t.TrackId
+where pt.PlaylistId = 5;
+
+Get all Track Names and the playlist Name that they're on ( 2 joins ).
+select t.name, p.name
+from Track t
+join PlaylistTrack pt on t.TrackId = pt.TrackId
+join Playlist p on pt.PlaylistId = p.PlaylistId;
+
+Get all Track Names and Album Titles that are the genre "Alternative" ( 2 joins ).
+select t.Name, a.title
+from Track t
+join Album a on t.AlbumId = a.AlbumId
+join Genre g on g.GenreId = t.GenreId
+where g.Name = "Alternative";
+
+NESTED QUERIES
+
+SYNTAX HINT-
+SELECT [Column names] 
+FROM [Table] 
+WHERE ColumnId IN ( SELECT ColumnId FROM [Table2] WHERE [Condition] );
+
+SELECT Name, Email FROM Athlete WHERE AthleteId IN ( SELECT PersonId FROM PieEaters WHERE Flavor='Apple' );
+
+Get all invoices where the UnitPrice on the InvoiceLine is greater than $0.99.
+select *
+from Invoice
+where InvoiceId in ( select InvoiceId from InvoiceLine where UnitPrice > 0.99);
+
+Get all Playlist Tracks where the playlist name is Music.
+select *
+from PlayListTrack
+where PlaylistId = (select PlaylistId from Playlist where Name="Music");
+
+Get all Track names for PlaylistId 5.
+select Name
+from Track
+where TrackId in (select TrackId from PlaylistTrack where PlaylistId =5);
+
+Get all tracks where the Genre is Comedy.
+select *
+from Track
+where GenreId in (select GenreId from Genre where Name = "Comedy");
+
+Get all tracks where the Album is Fireball.
+select *
+from Track
+where AlbumId in (select AlbumId from Album where Title = "Fireball");
+
+Get all tracks for the artist Queen ( 2 nested subqueries ).
+select *
+from Track
+where AlbumId in (
+	select AlbumId from Album where ArtistId in (
+    	select ArtistId from Artist where Name = 'Queen'
+    )
+);
+
+UPDATING ROWS
+
+SYNTAX HINT - 
+
+UPDATE [Table] 
+SET [column1] = [value1], [column2] = [value2] 
+WHERE [Condition];
+
+UPDATE Athletes SET sport = 'Picklball' WHERE sport = 'pockleball';
+
+Find all customers with fax numbers and set those numbers to null.
+update Customer
+set fax = null
+where fax is not null;
+
+Find all customers with no company (null) and set their company to "Self".
+update Customer
+set Company = "Self"
+where Company is null;
+
+Find the customer Julia Barnett and change her last name to Thompson.
+update Customer
+set LastName = "Thompson"
+where FirstName = "Julia" and LastName = "Barnett";
+
+Find the customer with this email luisrojas@yahoo.cl and change his support rep to 4.
+update Customer
+set SupportRepId = 4
+where Email = "luisrojas@yahoo.cl";
+
+Find all tracks that are the genre Metal and have no composer. Set the composer to "The darkness around us".
+update Track
+set Composer = "The darkness around us"
+where GenreId = (select GenreId from Genre where Name = "Metal")
+and Composer is null;
+
+GROUP BY
+
+SYNTAX HINT - 
+SELECT [Column1], [Column2]
+FROM [Table] [abbr]
+GROUP BY [Column];
+
+Find a count of how many tracks there are per genre. Display the genre name with the count.
+select Count(*), g.Name
+from Track t
+join Genre g on t.GenreId = g.GenreId
+group by g.Name;
+
+Find a count of how many tracks are the "Pop" genre and how many tracks are the "Rock" genre.
+select Count(*), g.Name
+from Track t
+join Genre g on g.GenreId = t.GenreId
+where g.Name = 'Pop' or g.Name = 'Rock'
+group by g.Name;
+
+Find a list of all artists and how many albums they have.
+select ar.Name, Count(*)
+from Artist ar
+join Album al on ar.ArtistId = al.ArtistId
+group by al.ArtistId;
+
+
+DISTINCT
+SYNTAX HINT-
+SELECT DISTINCT [Column]
+FROM [Table];
+
+From the Track table find a unique list of all Composers.
+select distinct Composer
+from Track;
+
+From the Invoice table find a unique list of all BillingPostalCodes.
+select distinct BillingPostalCode
+from Invoice;
+
+From the Customer table find a unique list of all Companys.
+select distinct Company
+from Customer;
+
+
+DELETE ROWS
+SYNTAX HINT- 
+DELETE FROM [Table] WHERE [Condition]
+
+Delete all "bronze" entries from the table.
+delete
+from practice_delete
+where Type = "bronze";
+
+Delete all "silver" entries from the table.
+delete
+from practice_delete
+where Type = "silver";
+
+Delete all entries whose value is equal to 150.
+delete
+from practice_delete
+where Value = 150;
+
+ECOMMERCE SIMULATION
+
+Create 3 tables following the criteria in the summary.
+
+/* create table Users (
+    UserID integer primary key autoincrement,       
+	Name varchar(60) not null,
+  	Email varchar(60) not null
+);
+
+create table Products(
+  	ProductID integer primary key autoincrement,
+	Name varchar(60) not null,
+  	Price integer
+); */
+
+create table Orders(
+	OrderID integer,
+  	ProductID integer,
+  	UserID integer,
+  	foreign key (ProductID) references Products(ProductID),
+  	foreign key (UserID) references Users(UserID)
+) 
+
+Add some data to fill up each table.
+/* insert into Users (Name, Email)
+values
+('Shanelle', 'bob@yahoo.com'),
+('Eric', 'eric@gmail.com'),
+('Scar', 'cat@google.com') */
+
+/* insert into Products (Name, Price)
+values
+('Headphones', 58.00),
+('Beer', 9.00),
+('Shoes', 89.00) */
+
+/* insert into Orders (OrderID, ProductID, UserID)
+values
+	(1,1,1),
+  (2,2,2),
+  (3,3,3) */
+
